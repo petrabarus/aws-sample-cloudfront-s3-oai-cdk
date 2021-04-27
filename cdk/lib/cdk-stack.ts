@@ -27,6 +27,7 @@ export class CdkStack extends cdk.Stack {
         behaviors: [{
           isDefaultBehavior: true,
           minTtl: cdk.Duration.seconds(30),
+          defaultTtl: cdk.Duration.seconds(30),
           maxTtl: cdk.Duration.minutes(1),
         }],
         s3OriginSource: {
