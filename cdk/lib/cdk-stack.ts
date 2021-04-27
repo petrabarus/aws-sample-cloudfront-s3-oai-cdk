@@ -10,6 +10,7 @@ export class CdkStack extends cdk.Stack {
     const bucket = new s3.Bucket(this, 'Bucket', {
       websiteIndexDocument: 'index.html',
       publicReadAccess: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
@@ -20,11 +21,13 @@ export class CdkStack extends cdk.Stack {
     });
     
     const oai = new cloudfront.OriginAccessIdentity(this, 'OriginAccessIdentity');
-
+    
     const distribution = new cloudfront.CloudFrontWebDistribution(this, 'Distribution', {
       originConfigs: [{
         behaviors: [{
-          isDefaultBehavior: true
+          isDefaultBehavior: true,
+          minTtl: cdk.Duration.seconds(30),
+          maxTtl: cdk.Duration.minutes(1),
         }],
         s3OriginSource: {
           s3BucketSource: bucket,
@@ -34,6 +37,8 @@ export class CdkStack extends cdk.Stack {
     });
     
     new cdk.CfnOutput(this, 'BucketName', { value: bucket.bucketName });
-    new cdk.CfnOutput(this, 'DistributionURL', { value: distribution.distributionDomainName });
+    
+    const concat = new cdk.StringConcat();
+    new cdk.CfnOutput(this, 'DistributionURL', { value: concat.join('https://', distribution.distributionDomainName) });
   }
 }
